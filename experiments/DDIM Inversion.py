@@ -168,8 +168,12 @@ def sample(prompt, start_step=0, start_latents=None,
         latents = alpha_t_prev.sqrt()*predicted_x0 + direction_pointing_to_xt
 
     # Post-processing
-    images = pipe.decode_latents(latents)
-    images = pipe.numpy_to_pil(images)
+    latents = latents / pipe.vae.config.scaling_factor
+    with torch.no_grad():
+        images = pipe.vae.decode(latents).sample
+    images = (images / 2 + 0.5).clamp(0, 1)
+    images = images.cpu().permute(0, 2, 3, 1).float().numpy()
+    images = pipe.image_processor.numpy_to_pil(images)
 
     return images
 #%%
@@ -300,8 +304,11 @@ inverted_latents.shape
 #%%
 # Decode the final inverted latents
 with torch.no_grad():
-  im = pipe.decode_latents(inverted_latents[-1].unsqueeze(0))
-pipe.numpy_to_pil(im)[0]
+  latents_to_decode = inverted_latents[-1].unsqueeze(0) / pipe.vae.config.scaling_factor
+  im = pipe.vae.decode(latents_to_decode).sample
+  im = (im / 2 + 0.5).clamp(0, 1)
+  im = im.cpu().permute(0, 2, 3, 1).float().numpy()
+pipe.image_processor.numpy_to_pil(im)[0]
 #%%
 """You can pass these inverted latents to the pipeline using the normal __call__ method:
 

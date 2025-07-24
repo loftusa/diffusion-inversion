@@ -1,0 +1,18 @@
+[project]
+name = "diffusion-inversion"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "torch",
+    "torchvision",
+    "diffusers",
+    "transformers",
+    "accelerate",
+    "pillow",
+    "matplotlib",
+    "tqdm",
+    "requests",
+    "ipykernel>=6.30.0",
+]

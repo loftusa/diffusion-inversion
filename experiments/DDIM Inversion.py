@@ -201,7 +201,10 @@ input_image_prompt = "Photograph of a puppy on the grass"
 """Next, we need to turn this PIL image into a set of latents which we will use as the starting point for our inversion:"""
 #%%
 # Encode with VAE
-with torch.no_grad(): latent = pipe.vae.encode(tfms.functional.to_tensor(input_image).unsqueeze(0).to(device)*2-1)
+with torch.no_grad(): 
+    image_tensor = tfms.functional.to_tensor(input_image).unsqueeze(0).to(device) * 2 - 1
+    image_tensor = image_tensor.to(dtype=torch.float16)
+    latent = pipe.vae.encode(image_tensor)
 l = 0.13025 * latent.latent_dist.sample()
 #%%
 """Alright, time for the fun bit. This function looks similar to the sampling function above, but we move through the timesteps in the opposite direction, starting at t=0 and moving towards higher and higher noise. And instead of updating our latents to be less noisy, we estimate the predicted noise and use it to UNDO an update step, moving them from t to t+1."""
@@ -352,7 +355,10 @@ Let's wrap the code we've written so far into a simple function that takes an im
 """
 #%%
 def edit(input_image, input_image_prompt, edit_prompt, num_steps=100, start_step=30, guidance_scale=3.5):
-    with torch.no_grad(): latent = pipe.vae.encode(tfms.functional.to_tensor(input_image).unsqueeze(0).to(device)*2-1)
+    with torch.no_grad(): 
+        image_tensor = tfms.functional.to_tensor(input_image).unsqueeze(0).to(device) * 2 - 1
+        image_tensor = image_tensor.to(dtype=torch.float16)
+        latent = pipe.vae.encode(image_tensor)
     l = 0.13025 * latent.latent_dist.sample()
     inverted_latents = invert(l, input_image_prompt, num_inference_steps=num_steps)
     final_im = sample(edit_prompt, start_latents=inverted_latents[-(start_step+1)][None],

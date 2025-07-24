@@ -169,6 +169,7 @@ def sample(prompt, start_step=0, start_latents=None,
 
     # Post-processing
     latents = latents / pipe.vae.config.scaling_factor
+    latents = latents.to(dtype=torch.float16)
     with torch.no_grad():
         images = pipe.vae.decode(latents).sample
     images = (images / 2 + 0.5).clamp(0, 1)
@@ -305,6 +306,7 @@ inverted_latents.shape
 # Decode the final inverted latents
 with torch.no_grad():
   latents_to_decode = inverted_latents[-1].unsqueeze(0) / pipe.vae.config.scaling_factor
+  latents_to_decode = latents_to_decode.to(dtype=torch.float16)
   im = pipe.vae.decode(latents_to_decode).sample
   im = (im / 2 + 0.5).clamp(0, 1)
   im = im.cpu().permute(0, 2, 3, 1).float().numpy()

@@ -142,7 +142,7 @@ def sample(prompt, start_step=0, start_latents=None,
         added_cond_kwargs = {"text_embeds": pooled_embeddings, "time_ids": time_ids}
         noise_pred = pipe.unet(
             latent_model_input, 
-            t, 
+            t.to(dtype=torch.float16), 
             encoder_hidden_states=text_embeddings,
             added_cond_kwargs=added_cond_kwargs
         ).sample
@@ -261,7 +261,7 @@ def invert(start_latents, prompt, guidance_scale=3.5, num_inference_steps=80,
         added_cond_kwargs = {"text_embeds": pooled_embeddings, "time_ids": time_ids}
         noise_pred = pipe.unet(
             latent_model_input, 
-            t, 
+            t.to(dtype=torch.float16), 
             encoder_hidden_states=text_embeddings,
             added_cond_kwargs=added_cond_kwargs
         ).sample

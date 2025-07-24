@@ -119,6 +119,11 @@ def sample(prompt, start_step=0, start_latents=None,
     time_ids = torch.tensor([original_size + crops_coords_top_left + target_size], dtype=torch.float16, device=device)
     if do_classifier_free_guidance:
         time_ids = torch.cat([time_ids] * 2)
+    
+    # Generate guidance scale conditioning for SDXL
+    guidance_scale_tensor = torch.tensor([guidance_scale], dtype=torch.float16, device=device)
+    if do_classifier_free_guidance:
+        guidance_scale_tensor = torch.cat([guidance_scale_tensor] * 2)
 
     # Set num inference steps
     pipe.scheduler.set_timesteps(num_inference_steps, device=device)
@@ -144,6 +149,7 @@ def sample(prompt, start_step=0, start_latents=None,
             latent_model_input, 
             t.to(dtype=torch.float16), 
             encoder_hidden_states=text_embeddings,
+            timestep_cond=guidance_scale_tensor,
             added_cond_kwargs=added_cond_kwargs
         ).sample
 
@@ -233,6 +239,11 @@ def invert(start_latents, prompt, guidance_scale=3.5, num_inference_steps=80,
     time_ids = torch.tensor([original_size + crops_coords_top_left + target_size], dtype=torch.float16, device=device)
     if do_classifier_free_guidance:
         time_ids = torch.cat([time_ids] * 2)
+    
+    # Generate guidance scale conditioning for SDXL
+    guidance_scale_tensor = torch.tensor([guidance_scale], dtype=torch.float16, device=device)
+    if do_classifier_free_guidance:
+        guidance_scale_tensor = torch.cat([guidance_scale_tensor] * 2)
 
     # Latents are now the specified start latents
     latents = start_latents.clone()
@@ -263,6 +274,7 @@ def invert(start_latents, prompt, guidance_scale=3.5, num_inference_steps=80,
             latent_model_input, 
             t.to(dtype=torch.float16), 
             encoder_hidden_states=text_embeddings,
+            timestep_cond=guidance_scale_tensor,
             added_cond_kwargs=added_cond_kwargs
         ).sample
 

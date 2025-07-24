@@ -106,6 +106,10 @@ def sample(prompt, start_step=0, start_latents=None,
     else:
         text_embeddings = prompt_embeds
         pooled_embeddings = pooled_prompt_embeds
+    
+    # Ensure all embeddings are in the correct dtype
+    text_embeddings = text_embeddings.to(dtype=torch.float16)
+    pooled_embeddings = pooled_embeddings.to(dtype=torch.float16)
 
     # Generate time_ids for SDXL conditioning
     original_size = (1024, 1024)
@@ -216,6 +220,10 @@ def invert(start_latents, prompt, guidance_scale=3.5, num_inference_steps=80,
     else:
         text_embeddings = prompt_embeds
         pooled_embeddings = pooled_prompt_embeds
+    
+    # Ensure all embeddings are in the correct dtype
+    text_embeddings = text_embeddings.to(dtype=torch.float16)
+    pooled_embeddings = pooled_embeddings.to(dtype=torch.float16)
 
     # Generate time_ids for SDXL conditioning
     original_size = (1024, 1024)

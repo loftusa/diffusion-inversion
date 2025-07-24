@@ -125,10 +125,10 @@ def sample(prompt, start_step=0, start_latents=None,
 
     # Create a random starting point if we don't have one already
     if start_latents is None:
-        start_latents = torch.randn(1, 4, 128, 128, device=device)
+        start_latents = torch.randn(1, 4, 128, 128, device=device, dtype=torch.float16)
         start_latents *= pipe.scheduler.init_noise_sigma
 
-    latents = start_latents.clone()
+    latents = start_latents.clone().to(dtype=torch.float16)
 
     for i in tqdm(range(start_step, num_inference_steps)):
 
@@ -168,8 +168,7 @@ def sample(prompt, start_step=0, start_latents=None,
         latents = alpha_t_prev.sqrt()*predicted_x0 + direction_pointing_to_xt
 
     # Post-processing
-    latents = latents / pipe.vae.config.scaling_factor
-    latents = latents.to(dtype=torch.float16)
+    latents = latents.to(dtype=torch.float16) / pipe.vae.config.scaling_factor
     with torch.no_grad():
         images = pipe.vae.decode(latents).sample
     images = (images / 2 + 0.5).clamp(0, 1)
@@ -205,7 +204,7 @@ with torch.no_grad():
     image_tensor = tfms.functional.to_tensor(input_image).unsqueeze(0).to(device) * 2 - 1
     image_tensor = image_tensor.to(dtype=torch.float16)
     latent = pipe.vae.encode(image_tensor)
-l = 0.13025 * latent.latent_dist.sample()
+l = pipe.vae.config.scaling_factor * latent.latent_dist.sample()
 #%%
 """Alright, time for the fun bit. This function looks similar to the sampling function above, but we move through the timesteps in the opposite direction, starting at t=0 and moving towards higher and higher noise. And instead of updating our latents to be less noisy, we estimate the predicted noise and use it to UNDO an update step, moving them from t to t+1."""
 #%%
@@ -359,7 +358,7 @@ def edit(input_image, input_image_prompt, edit_prompt, num_steps=100, start_step
         image_tensor = tfms.functional.to_tensor(input_image).unsqueeze(0).to(device) * 2 - 1
         image_tensor = image_tensor.to(dtype=torch.float16)
         latent = pipe.vae.encode(image_tensor)
-    l = 0.13025 * latent.latent_dist.sample()
+    l = pipe.vae.config.scaling_factor * latent.latent_dist.sample()
     inverted_latents = invert(l, input_image_prompt, num_inference_steps=num_steps)
     final_im = sample(edit_prompt, start_latents=inverted_latents[-(start_step+1)][None],
                       start_step=start_step, num_inference_steps=num_steps, guidance_scale=guidance_scale)[0]

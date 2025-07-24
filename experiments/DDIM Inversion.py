@@ -138,6 +138,9 @@ def sample(prompt, start_step=0, start_latents=None,
         latent_model_input = torch.cat([latents] * 2) if do_classifier_free_guidance else latents
         latent_model_input = pipe.scheduler.scale_model_input(latent_model_input, t)
 
+        # Ensure all inputs are in correct dtype
+        latent_model_input = latent_model_input.to(dtype=torch.float16)
+
         # Predict the noise residual
         added_cond_kwargs = {"text_embeds": pooled_embeddings, "time_ids": time_ids}
         noise_pred = pipe.unet(
@@ -256,6 +259,9 @@ def invert(start_latents, prompt, guidance_scale=3.5, num_inference_steps=80,
         # Expand the latents if we are doing classifier free guidance
         latent_model_input = torch.cat([latents] * 2) if do_classifier_free_guidance else latents
         latent_model_input = pipe.scheduler.scale_model_input(latent_model_input, t)
+
+        # Ensure all inputs are in correct dtype
+        latent_model_input = latent_model_input.to(dtype=torch.float16)
 
         # Predict the noise residual
         added_cond_kwargs = {"text_embeds": pooled_embeddings, "time_ids": time_ids}

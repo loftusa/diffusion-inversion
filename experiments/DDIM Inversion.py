@@ -112,7 +112,7 @@ def sample(prompt, start_step=0, start_latents=None,
     target_size = (1024, 1024)  
     crops_coords_top_left = (0, 0)
     
-    time_ids = torch.tensor([original_size + crops_coords_top_left + target_size], dtype=torch.long, device=device)
+    time_ids = torch.tensor([original_size + crops_coords_top_left + target_size], dtype=torch.float16, device=device)
     if do_classifier_free_guidance:
         time_ids = torch.cat([time_ids] * 2)
 
@@ -222,7 +222,7 @@ def invert(start_latents, prompt, guidance_scale=3.5, num_inference_steps=80,
     target_size = (1024, 1024)  
     crops_coords_top_left = (0, 0)
     
-    time_ids = torch.tensor([original_size + crops_coords_top_left + target_size], dtype=torch.long, device=device)
+    time_ids = torch.tensor([original_size + crops_coords_top_left + target_size], dtype=torch.float16, device=device)
     if do_classifier_free_guidance:
         time_ids = torch.cat([time_ids] * 2)
 
